@@ -35,7 +35,8 @@ class Geminipy(object):
         live -- use the live API? otherwise, use the sandbox (default False)
         """
         self.api_key = api_key
-        self.secret_key = secret_key
+        self.secret_key = bytearray()
+        self.secret_key.extend(secret_key.encode())
 
         if live:
             self.base_url = self.live_url
@@ -240,10 +241,13 @@ class Geminipy(object):
         params -- a dictionary of parameters
         """
         jsonparams = json.dumps(params)
-        payload = base64.b64encode(jsonparams)
-        signature = hmac.new(self.secret_key, payload,
-                             hashlib.sha384).hexdigest()
+        jsonparams_b = bytearray()
+        jsonparams_b.extend(jsonparams.encode())
+
+        payload = base64.b64encode(jsonparams_b)
+        signature = hmac.new(self.secret_key, payload, hashlib.sha384).hexdigest()
 
         return {'X-GEMINI-APIKEY': self.api_key,
                 'X-GEMINI-PAYLOAD': payload,
                 'X-GEMINI-SIGNATURE': signature}
+
